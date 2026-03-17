@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FlowDesk — Dead-simple booking and scheduling built for solo plumbers. Online booking, automated texts, and easy invoicing. Up and running in 10 minutes." />
+  <title>FlowDesk — Booking & Scheduling for Solo Plumbers</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="logo" href="#">Flow<span>Desk</span></a>
+    <button class="nav-cta" onclick="scrollToSignup()">Join Waitlist</button>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-eyebrow">Now accepting early access</div>
+
+      <h1>Stop missing jobs<em>because you missed<br>a call.</em></h1>
+
+      <p class="hero-sub">
+        <strong>FlowDesk</strong> is the dead-simple booking and scheduling tool built for
+        solo plumbers. Online booking, automated texts, and easy invoicing —
+        up and running in 10 minutes.
+      </p>
+
+      <form class="email-form" id="heroForm" onsubmit="handleSubmit(event, 'heroForm')">
+        <input type="email" placeholder="Enter your work email" required />
+        <button type="submit">Get Early Access</button>
+      </form>
+      <div class="form-success" id="heroSuccess">✓ &nbsp;You're on the list — we'll be in touch.</div>
+      <p class="form-note">No credit card. No setup fees. Cancel anytime.</p>
+
+      <div class="hero-stats">
+        <div>
+          <div class="stat-num">10 min</div>
+          <div class="stat-label">To get set up</div>
+        </div>
+        <div>
+          <div class="stat-num">$39</div>
+          <div class="stat-label">Per month, flat</div>
+        </div>
+        <div>
+          <div class="stat-num">0</div>
+          <div class="stat-label">Contracts required</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PROBLEM TICKER ── -->
+  <div class="problem-strip">
+    <div class="problem-scroll">
+      <div class="problem-item"><div class="problem-dot"></div> Missing calls under the sink</div>
+      <div class="problem-item"><div class="problem-dot"></div> Scheduling in your head</div>
+      <div class="problem-item"><div class="problem-dot"></div> Chasing invoice payments</div>
+      <div class="problem-item"><div class="problem-dot"></div> Customers calling the competition</div>
+      <div class="problem-item"><div class="problem-dot"></div> Double-booked on a Friday</div>
+      <!-- duplicate set for seamless loop -->
+      <div class="problem-item"><div class="problem-dot"></div> Missing calls under the sink</div>
+      <div class="problem-item"><div class="problem-dot"></div> Scheduling in your head</div>
+      <div class="problem-item"><div class="problem-dot"></div> Chasing invoice payments</div>
+      <div class="problem-item"><div class="problem-dot"></div> Customers calling the competition</div>
+      <div class="problem-item"><div class="problem-dot"></div> Double-booked on a Friday</div>
+    </div>
+  </div>
+
+  <!-- ── PROBLEMS ── -->
+  <section class="problems">
+    <div class="problems-layout">
+      <div>
+        <p class="section-label">The problem</p>
+        <h2 class="section-title">You're running<br>the whole show.</h2>
+        <p class="section-body">Big scheduling software is built for companies with office staff. You're a solo operator — you don't need a $200/month platform. You need the basics, working perfectly.</p>
+
+        <div class="problems-list">
+          <div class="problem-card reveal">
+            <h3>Customers can't book online</h3>
+            <p>If they can't reach you by phone, they Google the next plumber. Every unanswered call is a lost job.</p>
+          </div>
+          <div class="problem-card reveal">
+            <h3>No-shows with zero warning</h3>
+            <p>Without automated reminders, customers forget. You show up, they don't. That's money and time gone.</p>
+          </div>
+          <div class="problem-card reveal">
+            <h3>Invoicing is an afterthought</h3>
+            <p>Handwritten estimates, text-messaged invoices, chasing payments weeks later. There's a better way.</p>
+          </div>
+          <div class="problem-card reveal">
+            <h3>Jobber and ServiceTitan are overkill</h3>
+            <p>$100–$300/month with week-long onboarding and features you'll never touch. Built for companies, not sole operators.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="phone-header">Today's Jobs</div>
+            <div class="phone-job">
+              <div class="pj-time">8:00 AM</div>
+              <div class="pj-name">Mike Torrence</div>
+              <div class="pj-type">Burst pipe — kitchen</div>
+              <div class="pj-badge new">New booking</div>
+            </div>
+            <div class="phone-job">
+              <div class="pj-time">11:30 AM</div>
+              <div class="pj-name">Dana Reeves</div>
+              <div class="pj-type">Water heater install</div>
+              <div class="pj-badge">Confirmed ✓</div>
+            </div>
+            <div class="phone-job">
+              <div class="pj-time">2:00 PM</div>
+              <div class="pj-name">Al's Diner</div>
+              <div class="pj-type">Drain inspection</div>
+              <div class="pj-badge">Reminder sent</div>
+            </div>
+            <div class="phone-job">
+              <div class="pj-time">4:30 PM</div>
+              <div class="pj-name">Terry Munoz</div>
+              <div class="pj-type">Faucet replacement</div>
+              <div class="pj-badge new">New booking</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURES ── -->
+  <section class="features">
+    <p class="section-label" style="text-align:center">What you get</p>
+    <h2 class="section-title" style="text-align:center; max-width:700px; margin:0 auto">Four things.<br>Done right.</h2>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">🔗</div>
+        <h3>Online Booking Link</h3>
+        <p>One link you put in your Google Business Profile, voicemail, or anywhere else. Customers pick a time — you get a notification.</p>
+        <span class="feature-tag">→ Never miss a lead</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📱</div>
+        <h3>Automated Texts</h3>
+        <p>"On my way" messages, appointment reminders, and booking confirmations — sent automatically so you never have to remember.</p>
+        <span class="feature-tag">→ Fewer no-shows</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📋</div>
+        <h3>Job Intake Forms</h3>
+        <p>Customers describe the problem before you arrive. Photos, address, notes — all in one place. Show up prepared, not surprised.</p>
+        <span class="feature-tag">→ More efficient days</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">💰</div>
+        <h3>Simple Invoicing</h3>
+        <p>Send a professional invoice in 30 seconds. Accept card payments online. Get paid faster without the awkward follow-up texts.</p>
+        <span class="feature-tag">→ Get paid on time</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📅</div>
+        <h3>Daily Job View</h3>
+        <p>See your whole day at a glance on your phone. Tap to see customer details, notes, and job history. Simple as it sounds.</p>
+        <span class="feature-tag">→ Stay organized</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">⚡</div>
+        <h3>10-Minute Setup</h3>
+        <p>No onboarding calls. No implementation fees. No learning curve. Enter your info, connect your calendar, share your link. Done.</p>
+        <span class="feature-tag">→ Start this week</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ── -->
+  <section class="how">
+    <p class="section-label">How it works</p>
+    <h2 class="section-title">Up and running<br>before lunch.</h2>
+
+    <div class="how-steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <h3>Create your profile</h3>
+        <p>Add your name, service area, job types, and availability. Takes about 5 minutes. No tech knowledge needed.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <h3>Share your link</h3>
+        <p>Put your FlowDesk booking link in your Google profile, voicemail, and social pages. Customers can now book without calling.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <h3>Jobs come to you</h3>
+        <p>New bookings show up on your phone. Automated reminders go out. You show up, do the job, send an invoice. That's it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRICING ── -->
+  <section class="pricing">
+    <p class="section-label">Pricing</p>
+    <h2 class="section-title">One plan.<br>No surprises.</h2>
+
+    <div class="pricing-card reveal">
+      <div class="pricing-badge">Early Access Pricing</div>
+      <div class="price"><sup>$</sup>39<span class="mo"> / month</span></div>
+      <p class="pricing-note">Flat rate. Unlimited jobs, clients, and invoices.</p>
+      <ul class="pricing-list">
+        <li>Online booking page with your branding</li>
+        <li>Automated appointment reminders via SMS</li>
+        <li>Job intake forms with photo uploads</li>
+        <li>Professional invoicing + online card payments</li>
+        <li>Daily schedule view on your phone</li>
+        <li>Real human support — not a ticket queue</li>
+        <li>No contracts. Cancel anytime.</li>
+      </ul>
+      <a href="#signup" class="pricing-cta" onclick="scrollToSignup(); return false;">Join the Waitlist</a>
+    </div>
+  </section>
+
+  <!-- ── FINAL CTA ── -->
+  <section class="final-cta" id="signup">
+    <p class="section-label">Get early access</p>
+    <h2 class="section-title">Get in before<br>we launch.</h2>
+    <p class="section-body">Early access members get locked-in pricing, a direct line to the founder, and the chance to shape what gets built next.</p>
+
+    <form class="email-form" id="ctaForm" onsubmit="handleSubmit(event, 'ctaForm')">
+      <input type="email" placeholder="Your work email" required />
+      <button type="submit">Reserve My Spot</button>
+    </form>
+    <div class="form-success" id="ctaSuccess" style="justify-content:center">✓ &nbsp;You're on the list — we'll be in touch.</div>
+    <p class="form-note" style="margin-top:14px">No credit card. No commitment. Just a spot in line.</p>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <a class="logo" href="#">Flow<span>Desk</span></a>
+    <p>Built for solo plumbers. Not plumbing companies.</p>
+    <a href="mailto:hello@flowdesk.co">hello@flowdesk.co</a>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/main.js"></script>
+</body>
+</html>
