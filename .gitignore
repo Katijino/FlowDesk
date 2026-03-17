@@ -1,1 +1,5 @@
 bash.exe.stackdump
+node_modules/
+app-dist/
+app/.env.local
+.env.local

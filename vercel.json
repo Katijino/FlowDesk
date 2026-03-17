@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/booking/:path*",   "destination": "/app-dist/index.html" },
+    { "source": "/dashboard/:path*", "destination": "/app-dist/index.html" },
+    { "source": "/setup",            "destination": "/app-dist/index.html" },
+    { "source": "/(.*)",             "destination": "/index.html" }
   ]
 }
