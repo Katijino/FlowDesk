@@ -15,7 +15,7 @@ export default function InvoicePage() {
   async function handleCreate() {
     setIsCreating(true)
     try {
-      const inv = await createInvoice(null)
+      const inv = await createInvoice()
       setSelectedId(inv.id)
     } finally {
       setIsCreating(false)
@@ -81,6 +81,11 @@ export default function InvoicePage() {
                   </span>
                   <Badge status={inv.status} />
                 </div>
+                {inv.customer_name && (
+                  <span style={{ fontSize: '12px', color: '#374151', fontWeight: 500 }}>
+                    {inv.customer_name}
+                  </span>
+                )}
                 <span style={{ fontSize: '12px', color: '#9ca3af' }}>
                   {formatDate(inv.created_at)}
                 </span>

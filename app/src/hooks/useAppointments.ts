@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import type { Appointment, AppointmentStatus } from '../types/database'
 import {
   getAppointmentsForDate,
+  getAppointmentsForRange,
   updateAppointmentStatus,
+  createAppointment,
 } from '../services/appointments'
 
 export function useAppointments(date?: Date) {
@@ -43,5 +45,31 @@ export function useAppointments(date?: Date) {
     []
   )
 
-  return { appointments, isLoading, error, refetch, updateStatus: handleUpdateStatus }
+  const handleCreateAppointment = useCallback(
+    async (payload: Omit<Appointment, 'id' | 'created_at' | 'updated_at' | 'status'>) => {
+      const appt = await createAppointment(payload)
+      setAppointments((prev) => [...prev, appt].sort(
+        (a, b) => new Date(a.appointment_time).getTime() - new Date(b.appointment_time).getTime()
+      ))
+      return appt
+    },
+    []
+  )
+
+  const fetchRange = useCallback(
+    async (start: Date, end: Date): Promise<Appointment[]> => {
+      return getAppointmentsForRange(start, end)
+    },
+    []
+  )
+
+  return {
+    appointments,
+    isLoading,
+    error,
+    refetch,
+    updateStatus: handleUpdateStatus,
+    createAppointment: handleCreateAppointment,
+    fetchRange,
+  }
 }

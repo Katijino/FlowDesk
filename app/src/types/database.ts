@@ -2,6 +2,7 @@ export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancell
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue'
 export type MessageType = 'confirmation' | 'reminder' | 'on_my_way'
 export type MessageStatus = 'pending' | 'sent' | 'failed'
+export type LeadStatus = 'new' | 'contacted' | 'scheduled' | 'closed'
 
 export interface BusinessProfile {
   id: string
@@ -10,6 +11,8 @@ export interface BusinessProfile {
   phone: string | null
   service_area: string | null
   slug: string
+  email: string | null
+  booking_slug: string | null
   created_at: string
   updated_at: string
 }
@@ -34,6 +37,18 @@ export interface Appointment {
   status: AppointmentStatus
   created_at: string
   updated_at: string
+}
+
+export interface Lead {
+  id: string
+  user_id: string
+  name: string
+  phone: string
+  email: string | null
+  description: string | null
+  preferred_time: string | null
+  status: LeadStatus
+  created_at: string
 }
 
 export interface MessageTemplate {
@@ -69,6 +84,9 @@ export interface Invoice {
   id: string
   user_id: string
   appointment_id: string | null
+  lead_id: string | null
+  customer_name: string | null
+  customer_phone: string | null
   total_amount: number
   status: InvoiceStatus
   payment_link: string | null
@@ -96,6 +114,10 @@ export interface InvoiceWithItems extends Invoice {
   appointments: Appointment | null
 }
 
+export interface InvoiceWithCustomer extends InvoiceWithItems {
+  lead: Lead | null
+}
+
 export interface AppointmentWithBusiness extends Appointment {
   business_profiles: BusinessProfile | null
 }
@@ -105,6 +127,7 @@ export namespace Database {
     business_profiles: { Row: BusinessProfile }
     availability: { Row: Availability }
     appointments: { Row: Appointment }
+    leads: { Row: Lead }
     message_templates: { Row: MessageTemplate }
     message_queue: { Row: MessageQueue }
     job_intake: { Row: JobIntake }

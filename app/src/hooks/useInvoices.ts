@@ -26,13 +26,21 @@ export function useInvoices() {
   }, [refetch])
 
   const handleCreateInvoice = useCallback(
-    async (appointmentId?: string | null) => {
+    async (options?: {
+      appointmentId?: string | null
+      leadId?: string | null
+      customerName?: string | null
+      customerPhone?: string | null
+    }) => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('Not authenticated')
 
       const invoice = await createInvoice({
         user_id: session.user.id,
-        appointment_id: appointmentId ?? null,
+        appointment_id: options?.appointmentId ?? null,
+        lead_id: options?.leadId ?? null,
+        customer_name: options?.customerName ?? null,
+        customer_phone: options?.customerPhone ?? null,
       })
       setInvoices((prev) => [invoice, ...prev])
       return invoice

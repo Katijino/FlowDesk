@@ -15,7 +15,7 @@ export async function getInvoicesForUser(): Promise<Invoice[]> {
 export async function getInvoiceWithItems(id: string): Promise<InvoiceWithItems> {
   const { data, error } = await supabase
     .from('invoices')
-    .select('*, invoice_items(*), appointments(*)')
+    .select('*, invoice_items(*), appointments(*), leads(*)')
     .eq('id', id)
     .single()
 
@@ -24,7 +24,11 @@ export async function getInvoiceWithItems(id: string): Promise<InvoiceWithItems>
 }
 
 export async function createInvoice(
-  payload: Pick<Invoice, 'user_id' | 'appointment_id'>
+  payload: Pick<Invoice, 'user_id' | 'appointment_id'> & {
+    lead_id?: string | null
+    customer_name?: string | null
+    customer_phone?: string | null
+  }
 ): Promise<Invoice> {
   const { data, error } = await supabase
     .from('invoices')

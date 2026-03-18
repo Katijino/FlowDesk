@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { Card } from '../ui/Card'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
 import { generateSlug } from '../../lib/utils'
+import { checkSlugAvailable } from '../../services/profile'
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -19,17 +20,50 @@ const DEFAULT_HOURS: HoursRow[] = DAYS.map((_, i) => ({
   end: '17:00',
 }))
 
-export function SetupWizard({ onComplete }: { onComplete: () => void }) {
+const DRAFT_KEY = 'setup_draft'
+
+interface SetupWizardProps {
+  onComplete: () => void
+  onExit?: () => void
+}
+
+export function SetupWizard({ onComplete, onExit }: SetupWizardProps) {
   const [step, setStep] = useState(0)
   const [businessName, setBusinessName] = useState('')
   const [phone, setPhone] = useState('')
   const [serviceArea, setServiceArea] = useState('')
+  const [email, setEmail] = useState('')
   const [slug, setSlug] = useState('')
   const [hours, setHours] = useState<HoursRow[]>(DEFAULT_HOURS)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle')
+  const slugCheckRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const steps = ['Business Info', 'Hours', 'Booking Link', 'Done']
+
+  // Load draft on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY)
+      if (raw) {
+        const draft = JSON.parse(raw)
+        if (draft.businessName) setBusinessName(draft.businessName)
+        if (draft.phone) setPhone(draft.phone)
+        if (draft.serviceArea) setServiceArea(draft.serviceArea)
+        if (draft.email) setEmail(draft.email)
+        if (draft.slug) setSlug(draft.slug)
+        if (typeof draft.step === 'number') setStep(draft.step)
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }, [])
+
+  // Persist draft on every change
+  useEffect(() => {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ businessName, phone, serviceArea, email, slug, step }))
+  }, [businessName, phone, serviceArea, email, slug, step])
 
   function handleNameBlur() {
     if (!slug && businessName) {
@@ -43,6 +77,25 @@ export function SetupWizard({ onComplete }: { onComplete: () => void }) {
 
   function updateHours(i: number, field: 'start' | 'end', value: string) {
     setHours((h) => h.map((row, idx) => idx === i ? { ...row, [field]: value } : row))
+  }
+
+  function handleSlugChange(value: string) {
+    const newSlug = generateSlug(value)
+    setSlug(newSlug)
+    setSlugStatus('checking')
+
+    if (slugCheckRef.current) clearTimeout(slugCheckRef.current)
+    slugCheckRef.current = setTimeout(async () => {
+      if (!newSlug) { setSlugStatus('idle'); return }
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const userId = session?.user?.id ?? ''
+        const available = await checkSlugAvailable(newSlug, userId)
+        setSlugStatus(available ? 'available' : 'taken')
+      } catch {
+        setSlugStatus('idle')
+      }
+    }, 400)
   }
 
   async function handleFinish() {
@@ -62,7 +115,9 @@ export function SetupWizard({ onComplete }: { onComplete: () => void }) {
           business_name: businessName,
           phone,
           service_area: serviceArea,
+          email: email || null,
           slug,
+          booking_slug: slug,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' })
 
@@ -86,6 +141,7 @@ export function SetupWizard({ onComplete }: { onComplete: () => void }) {
         if (availError) throw availError
       }
 
+      localStorage.removeItem(DRAFT_KEY)
       onComplete()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save')
@@ -95,7 +151,30 @@ export function SetupWizard({ onComplete }: { onComplete: () => void }) {
   }
 
   return (
-    <div style={{ maxWidth: 520, margin: '0 auto', padding: '32px 16px' }}>
+    <div style={{ maxWidth: 520, margin: '0 auto', padding: '32px 16px', position: 'relative' }}>
+      {/* X button */}
+      {onExit && (
+        <button
+          onClick={onExit}
+          style={{
+            position: 'absolute',
+            top: 32,
+            right: 16,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: 20,
+            color: '#9ca3af',
+            lineHeight: 1,
+            padding: 4,
+            borderRadius: 6,
+          }}
+          title="Exit setup"
+        >
+          ×
+        </button>
+      )}
+
       {/* Progress */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '32px' }}>
         {steps.map((label, i) => (
@@ -137,6 +216,13 @@ export function SetupWizard({ onComplete }: { onComplete: () => void }) {
               value={serviceArea}
               onChange={(e) => setServiceArea(e.target.value)}
               placeholder="Austin, TX and surrounding areas"
+            />
+            <Input
+              label="Email (optional)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="mike@example.com"
+              type="email"
             />
             <Button onClick={() => setStep(1)} disabled={!businessName} style={{ alignSelf: 'flex-end' }}>
               Next →
@@ -213,16 +299,25 @@ export function SetupWizard({ onComplete }: { onComplete: () => void }) {
             <p style={{ margin: 0, fontSize: '14px', color: '#374151' }}>
               Customers will book appointments at this URL:
             </p>
-            <Input
-              label="URL Slug"
-              value={slug}
-              onChange={(e) => setSlug(generateSlug(e.target.value))}
-              helper={`yourflowdesk.com/booking/${slug || '...'}`}
-            />
+            <div>
+              <Input
+                label="URL Slug"
+                value={slug}
+                onChange={(e) => handleSlugChange(e.target.value)}
+                helper={`yourflowdesk.com/booking/${slug || '...'}`}
+              />
+              {slug && slugStatus !== 'idle' && (
+                <div style={{ marginTop: 6, fontSize: 12 }}>
+                  {slugStatus === 'checking' && <span style={{ color: '#9ca3af' }}>Checking...</span>}
+                  {slugStatus === 'available' && <span style={{ color: '#16a34a' }}>✓ Available</span>}
+                  {slugStatus === 'taken' && <span style={{ color: '#dc2626' }}>✗ Already taken — choose another</span>}
+                </div>
+              )}
+            </div>
             {error && <p style={{ color: '#dc2626', fontSize: '13px', margin: 0 }}>{error}</p>}
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <Button variant="ghost" onClick={() => setStep(1)}>← Back</Button>
-              <Button onClick={() => setStep(3)} disabled={!slug}>
+              <Button onClick={() => setStep(3)} disabled={!slug || slugStatus === 'taken'}>
                 Next →
               </Button>
             </div>

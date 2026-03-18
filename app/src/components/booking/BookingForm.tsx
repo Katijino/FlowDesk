@@ -15,16 +15,21 @@ interface BookingFormProps {
     description: string
     appointment_time: string
   }) => Promise<void>
+  onLeadCapture?: (payload: {
+    name: string
+    phone: string
+    email: string | null
+    description: string | null
+  }) => Promise<void>
   onDateChange?: (date: Date) => void
 }
 
 interface FormErrors {
   customer_name?: string
   phone?: string
-  appointment_time?: string
 }
 
-export function BookingForm({ availability, bookedSlots, onSubmit, onDateChange }: BookingFormProps) {
+export function BookingForm({ availability, bookedSlots, onSubmit, onLeadCapture, onDateChange }: BookingFormProps) {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -38,7 +43,6 @@ export function BookingForm({ availability, bookedSlots, onSubmit, onDateChange 
     const errs: FormErrors = {}
     if (!name.trim()) errs.customer_name = 'Name is required'
     if (!phone.trim()) errs.phone = 'Phone number is required'
-    if (!selectedSlot) errs.appointment_time = 'Please select a time'
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -48,13 +52,22 @@ export function BookingForm({ availability, bookedSlots, onSubmit, onDateChange 
     if (!validate()) return
     setIsSubmitting(true)
     try {
-      await onSubmit({
-        customer_name: name,
-        phone,
-        email,
-        description,
-        appointment_time: selectedSlot!,
-      })
+      if (selectedSlot) {
+        await onSubmit({
+          customer_name: name,
+          phone,
+          email,
+          description,
+          appointment_time: selectedSlot,
+        })
+      } else if (onLeadCapture) {
+        await onLeadCapture({
+          name,
+          phone,
+          email: email || null,
+          description: description || null,
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -68,6 +81,7 @@ export function BookingForm({ availability, bookedSlots, onSubmit, onDateChange 
   }
 
   const dateValue = selectedDate.toISOString().slice(0, 10)
+  const hasLeadCapture = !!onLeadCapture
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -144,12 +158,15 @@ export function BookingForm({ availability, bookedSlots, onSubmit, onDateChange 
           selected={selectedSlot}
           onSelect={setSelectedSlot}
         />
-        {errors.appointment_time && (
-          <span style={{ fontSize: '12px', color: '#dc2626' }}>{errors.appointment_time}</span>
+        {hasLeadCapture && !selectedSlot && (
+          <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>
+            No time that works? Skip selecting a time and we'll reach out to schedule you.
+          </p>
         )}
       </div>
+
       <Button type="submit" loading={isSubmitting} size="lg" style={{ width: '100%', justifyContent: 'center' }}>
-        Request Appointment
+        {selectedSlot ? 'Request Appointment' : hasLeadCapture ? 'Request a Callback' : 'Request Appointment'}
       </Button>
     </form>
   )

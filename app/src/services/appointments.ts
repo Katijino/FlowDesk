@@ -14,6 +14,18 @@ export async function getAppointmentsForDate(date: Date): Promise<Appointment[]>
   return data ?? []
 }
 
+export async function getAppointmentsForRange(start: Date, end: Date): Promise<Appointment[]> {
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .gte('appointment_time', start.toISOString())
+    .lte('appointment_time', end.toISOString())
+    .order('appointment_time', { ascending: true })
+
+  if (error) throw error
+  return data ?? []
+}
+
 export async function getAppointmentById(id: string): Promise<AppointmentWithIntake> {
   const { data, error } = await supabase
     .from('appointments')

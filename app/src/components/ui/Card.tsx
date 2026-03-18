@@ -14,8 +14,9 @@ export function Card({ title, subtitle, action, children, style }: CardProps) {
       style={{
         background: '#fff',
         border: '1px solid #e5e7eb',
-        borderRadius: '12px',
+        borderRadius: '16px',
         overflow: 'hidden',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04)',
         ...style,
       }}
     >

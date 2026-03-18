@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { supabase, type Session } from './lib/supabase'
 import BookingPage from './pages/booking/BookingPage'
 import JobsPage from './pages/dashboard/JobsPage'
 import InvoicePage from './pages/invoice/InvoicePage'
+import LeadsPage from './pages/dashboard/LeadsPage'
+import ProfilePage from './pages/dashboard/ProfilePage'
 import SetupPage from './pages/setup/SetupPage'
 import { LoginForm } from './components/auth/LoginForm'
+import { getLeadsForUser } from './services/leads'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
@@ -50,11 +53,31 @@ export default function App() {
           }
         />
         <Route
+          path="/dashboard/leads"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <LeadsPage />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/dashboard/invoices"
           element={
             <ProtectedRoute>
               <DashboardLayout>
                 <InvoicePage />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/profile"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <ProfilePage />
               </DashboardLayout>
             </ProtectedRoute>
           }
@@ -76,12 +99,20 @@ export default function App() {
 }
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const [newLeadCount, setNewLeadCount] = useState(0)
+
+  useEffect(() => {
+    getLeadsForUser()
+      .then((leads) => setNewLeadCount(leads.filter((l) => l.status === 'new').length))
+      .catch(() => {})
+  }, [])
+
   async function handleSignOut() {
     await supabase.auth.signOut()
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
       <nav
         style={{
           backgroundColor: '#fff',
@@ -90,23 +121,55 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: 52,
+          height: 56,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <span style={{ fontWeight: 700, fontSize: '15px', color: '#111827' }}>FlowDesk</span>
-          <NavLink href="/dashboard/jobs">Jobs</NavLink>
-          <NavLink href="/dashboard/invoices">Invoices</NavLink>
-          <NavLink href="/setup">Setup</NavLink>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+          {/* Logo mark */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 8,
+                background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontSize: 14,
+                fontWeight: 700,
+              }}
+            >
+              F
+            </div>
+            <span style={{ fontWeight: 700, fontSize: '15px', color: '#111827', letterSpacing: '-0.01em' }}>
+              FlowDesk
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <NavLink href="/dashboard/jobs">Jobs</NavLink>
+            <NavLinkWithBadge href="/dashboard/leads" badge={newLeadCount}>Leads</NavLinkWithBadge>
+            <NavLink href="/dashboard/invoices">Invoices</NavLink>
+            <NavLink href="/dashboard/profile">Profile</NavLink>
+          </div>
         </div>
         <button
           onClick={handleSignOut}
           style={{
             background: 'none',
-            border: 'none',
+            border: '1px solid #e5e7eb',
             cursor: 'pointer',
             fontSize: '13px',
             color: '#6b7280',
+            padding: '6px 12px',
+            borderRadius: 8,
+            fontWeight: 500,
           }}
         >
           Sign out
@@ -118,7 +181,8 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
 }
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
-  const active = window.location.pathname.startsWith(href)
+  const location = useLocation()
+  const active = location.pathname.startsWith(href)
   return (
     <a
       href={href}
@@ -127,11 +191,57 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
         fontWeight: 500,
         color: active ? '#2563eb' : '#6b7280',
         textDecoration: 'none',
-        padding: '4px 0',
-        borderBottom: active ? '2px solid #2563eb' : '2px solid transparent',
+        padding: '6px 10px',
+        borderRadius: 8,
+        background: active ? '#eff6ff' : 'transparent',
+        transition: 'color 150ms, background 150ms',
       }}
     >
       {children}
+    </a>
+  )
+}
+
+function NavLinkWithBadge({ href, children, badge }: { href: string; children: React.ReactNode; badge: number }) {
+  const location = useLocation()
+  const active = location.pathname.startsWith(href)
+  return (
+    <a
+      href={href}
+      style={{
+        fontSize: '13px',
+        fontWeight: 500,
+        color: active ? '#2563eb' : '#6b7280',
+        textDecoration: 'none',
+        padding: '6px 10px',
+        borderRadius: 8,
+        background: active ? '#eff6ff' : 'transparent',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        transition: 'color 150ms, background 150ms',
+      }}
+    >
+      {children}
+      {badge > 0 && (
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minWidth: 18,
+            height: 18,
+            borderRadius: 9,
+            background: '#dc2626',
+            color: '#fff',
+            fontSize: 10,
+            fontWeight: 700,
+            padding: '0 4px',
+          }}
+        >
+          {badge}
+        </span>
+      )}
     </a>
   )
 }
